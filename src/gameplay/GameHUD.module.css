@@ -1,0 +1,95 @@
+.hud {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    box-sizing: border-box;
+    padding:
+        max(0.75rem, env(safe-area-inset-top))
+        max(0.75rem, env(safe-area-inset-right))
+        max(0.75rem, env(safe-area-inset-bottom))
+        max(0.75rem, env(safe-area-inset-left));
+    color: #fff;
+    font-family: system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+    text-shadow: 0 0.08em 0.25em #000, 0 0 0.65em #000;
+}
+
+.health {
+    position: absolute;
+    top: max(0.75rem, env(safe-area-inset-top));
+    left: max(0.75rem, env(safe-area-inset-left));
+    width: min(44rem, 52vw);
+}
+
+.healthLabel {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.healthTrack {
+    height: clamp(0.55rem, 1.5vw, 0.9rem);
+    overflow: hidden;
+    border: 2px solid rgb(255 255 255 / 75%);
+    border-radius: 999px;
+    background: rgb(0 0 0 / 60%);
+    box-shadow: 0 0 0.5rem rgb(0 0 0 / 75%);
+}
+
+.healthFill {
+    width: var(--health-width);
+    height: 100%;
+    border-radius: inherit;
+    background: #58e6b5;
+    box-shadow: 0 0 0.5rem #58e6b5;
+    transition: width 80ms linear;
+}
+
+.stats {
+    position: absolute;
+    top: max(0.75rem, env(safe-area-inset-top));
+    right: max(0.75rem, env(safe-area-inset-right));
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.score {
+    font-size: clamp(1.75rem, 4vw, 3.5rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+
+.accuracy {
+    margin-top: 0.25rem;
+    font-size: clamp(1rem, 2vw, 1.6rem);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 40rem) {
+    .health {
+        width: 48vw;
+    }
+
+    .healthLabel span:last-child {
+        display: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .healthTrack {
+        border-color: CanvasText;
+        background: Canvas;
+    }
+
+    .healthFill {
+        background: Highlight;
+        box-shadow: none;
+    }
+}

@@ -10,14 +10,113 @@ body {
   overflow: hidden;
 }
 
+.game-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
 .game-canvas {
-  position: fixed;
+  position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .game-canvas canvas {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+  color: #fff;
+  background: rgb(0 0 0 / 72%);
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+.game-dialog {
+  width: min(28rem, 100%);
+  padding: 1.5rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 1rem;
+  background: rgb(18 18 24 / 94%);
+  box-shadow: 0 1rem 4rem rgb(0 0 0 / 65%);
+}
+
+.game-dialog h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.game-dialog p {
+  margin: 0 0 1.25rem;
+  color: rgb(255 255 255 / 78%);
+}
+
+.game-dialog button {
+  min-width: 7rem;
+  margin: 0.25rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 0.5rem;
+  color: #fff;
+  background: #b24bc4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.game-dialog button:hover {
+  background: #c75bd9;
+}
+
+.game-dialog button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.game-dialog .game-back {
+  background: #34343e;
+}
+
+.main-menu {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #121216;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.menu-background {
+  position: absolute;
+  inset: -20px;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.38) blur(10px);
+  pointer-events: none;
+}
+
+.menu-content {
+  position: relative;
+  z-index: 1;
 }
 
