@@ -1,0 +1,138 @@
+.pauseOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(2px);
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    user-select: none;
+    animation: fadeIn 0.15s ease-out forwards;
+    overflow: hidden;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.pausedTitle {
+    font-size: 38px;
+    font-weight: 800;
+    color: #f7c83c;
+    letter-spacing: 5px;
+    text-transform: lowercase;
+    margin-bottom: 28px;
+    text-shadow: 0 0 16px rgba(247, 200, 60, 0.45);
+    font-family: "Comfortaa", "Varela Round", "Torus", system-ui, -apple-system, sans-serif;
+}
+
+.buttonStack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    max-width: 880px;
+}
+
+.lazerSkewBtn {
+    width: 78%;
+    max-width: 760px;
+    height: 62px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transform: skewX(-14deg);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.lazerSkewBtn:hover {
+    transform: skewX(-14deg) scale(1.02);
+    filter: brightness(1.15);
+}
+
+.lazerSkewBtn:active {
+    transform: skewX(-14deg) scale(0.99);
+}
+
+.continueBtn {
+    background: linear-gradient(180deg, #8dc339 0%, #76b12a 100%);
+    box-shadow: 0 4px 14px rgba(118, 177, 42, 0.4);
+}
+
+.retryBtn {
+    background: linear-gradient(180deg, #f9a825 0%, #ea8f0b 100%);
+    box-shadow: 0 4px 14px rgba(234, 143, 11, 0.4);
+}
+
+.quitBtn {
+    background: linear-gradient(180deg, #c62828 0%, #a81c1c 100%);
+    box-shadow: 0 4px 14px rgba(198, 40, 40, 0.4);
+}
+
+.btnText {
+    transform: skewX(14deg);
+    font-size: 23px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+    position: relative;
+}
+
+.btnTriangles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.55;
+}
+
+.bottomStats {
+    position: absolute;
+    bottom: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 13px;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.statRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.3;
+}
+
+.statLabel {
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.statVal {
+    color: #ffffff;
+    font-weight: 800;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+}

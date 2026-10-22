@@ -1,4 +1,7 @@
 import { selectArchiveFile, unpackAndSave } from "../shared";
+import { generateSkinAtlas, saveSkinAtlasToDirectory } from "./skinAtlas";
+import { generateAudioAtlasFromFiles, saveAudioAtlasToDirectory } from "./audioAtlas";
+import { defaultTextures } from "./skinResolver";
 
 const ALLOWED_EXTENSIONS = new Set([
     "png",
@@ -8,12 +11,14 @@ const ALLOWED_EXTENSIONS = new Set([
     "ogg",
     "mp3",
     "ini",
+    "json",
 ]);
 
 const SKIN_FILES = new Set([
     "skin",
+    "skin-atlas",
+    "skin-audio-atlas",
 
-    // Catch objects and catcher states.
     "fruit-apple",
     "fruit-apple-overlay",
     "fruit-bananas",
@@ -32,7 +37,6 @@ const SKIN_FILES = new Set([
     "comboburst-fruits",
     "lighting",
 
-    // HUD, countdown, breaks and results.
     "scorebar-bg",
     "scorebar-colour",
     "scorebar-marker",
@@ -63,7 +67,6 @@ const SKIN_FILES = new Set([
         `ranking-${rank}-small`,
     ]),
 
-    // Catch hitsounds and shared gameplay sounds.
     ...["normal", "soft", "drum"].flatMap((sampleSet) => [
         `${sampleSet}-hitnormal`,
         `${sampleSet}-hitclap`,
@@ -102,7 +105,6 @@ export function isAllowedSkinFile(name: string): boolean {
 
     if (SKIN_FILES.has(stem)) return true;
 
-    // osu! animation frames use names such as fruit-catcher-idle-0@2x.png.
     const baseStem = stem.replace(/-\d+$/, "");
     return baseStem !== stem && SKIN_FILES.has(baseStem);
 }
@@ -132,18 +134,57 @@ async function readDirectory(directory: FileSystemDirectoryHandle, path = "", fi
     return files;
 }
 
-export async function importSkinArchive(): Promise<ImportedSkin> {
-    const file = await selectArchiveFile([".osk"], "osu! skin");
+export async function importSkinFile(file: File): Promise<ImportedSkin> {
     const directory = await unpackAndSave(
         file,
         "skins",
         isAllowedSkinFile,
     );
 
+    const files = await readDirectory(directory);
+
+    try {
+        const atlas = await generateSkinAtlas(files, defaultTextures);
+        await saveSkinAtlasToDirectory(directory, atlas.blob, atlas.manifest);
+        const pngHandle = await directory.getFileHandle("skin-atlas.png");
+        const jsonHandle = await directory.getFileHandle("skin-atlas.json");
+        files.set("skin-atlas.png", await pngHandle.getFile());
+        files.set("skin-atlas.json", await jsonHandle.getFile());
+    } catch (err) {
+        console.warn("Could not pre-bake skin atlas at import time:", err);
+    }
+
+    const hasCustomAudio = Array.from(files.keys()).some(
+        (name) => /\.(wav|mp3|ogg)$/i.test(name) && !name.startsWith("skin-audio-atlas"),
+    );
+
+    if (hasCustomAudio) {
+        try {
+            const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            if (AudioCtx) {
+                const audioCtx = new AudioCtx();
+                const audioAtlas = await generateAudioAtlasFromFiles(audioCtx, files);
+                await saveAudioAtlasToDirectory(directory, audioAtlas.blob, audioAtlas.manifest);
+                const wavHandle = await directory.getFileHandle("skin-audio-atlas.wav");
+                const audioJsonHandle = await directory.getFileHandle("skin-audio-atlas.json");
+                files.set("skin-audio-atlas.wav", await wavHandle.getFile());
+                files.set("skin-audio-atlas.json", await audioJsonHandle.getFile());
+                await audioCtx.close();
+            }
+        } catch (audioErr) {
+            console.warn("Could not pre-bake skin audio atlas at import time:", audioErr);
+        }
+    }
+
     return {
         name: directory.name,
-        files: await readDirectory(directory),
+        files,
     };
+}
+
+export async function importSkinArchive(): Promise<ImportedSkin> {
+    const file = await selectArchiveFile([".osk"], "osu! skin");
+    return importSkinFile(file);
 }
 
 export async function getImportedSkin(name: string): Promise<ImportedSkin | undefined> {

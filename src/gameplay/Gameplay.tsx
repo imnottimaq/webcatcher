@@ -16,13 +16,18 @@ import { prepareCatchBeatmap } from "./catchObjects";
 import GameCanvas from "./GameCanvas";
 import { INITIAL_GAMEPLAY_STATS, type GameplayStats } from "./gameplayStats";
 import PlayerLoader from "./PlayerLoader";
-import { DEFAULT_SETTINGS, type SettingsState } from "./settingsTypes";
+import RankingScreen from "./RankingScreen";
+import PauseOverlay from "./PauseOverlay";
+import FailOverlay from "./FailOverlay";
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, type SettingsState } from "./settingsTypes";
+import { incrementPlayCount } from "./localScores";
 
 type SessionPhase =
     | "loading"
     | "ready"
     | "starting"
     | "playing"
+    | "paused"
     | "failed"
     | "cleared"
     | "error";
@@ -30,6 +35,7 @@ type SessionPhase =
 interface GameplaySessionProps {
     setId: string;
     difficulty: BeatmapDifficulty;
+    retryCount?: number;
     onExit(): void;
     onRetry(): void;
 }
@@ -45,6 +51,7 @@ function getErrorMessage(error: unknown): string {
 function GameplaySession({
     setId,
     difficulty,
+    retryCount = 0,
     onExit,
     onRetry,
 }: GameplaySessionProps) {
@@ -55,30 +62,21 @@ function GameplaySession({
     const audioRef = useRef<GameplayAudioClock>(undefined);
     const mountedRef = useRef(true);
     const [audioDurationMs, setAudioDurationMs] = useState<number>();
+    const [audioContext, setAudioContext] = useState<AudioContext>();
     const [backgroundUrl, setBackgroundUrl] = useState<string>();
     const [phase, setPhase] = useState<SessionPhase>("loading");
     const [errorMessage, setErrorMessage] = useState<string>();
-    const [stats, setStats] = useState<GameplayStats>({
+    const statsRef = useRef<GameplayStats>({ ...INITIAL_GAMEPLAY_STATS });
+    const [finalStats, setFinalStats] = useState<GameplayStats>({
         ...INITIAL_GAMEPLAY_STATS,
     });
-    const [settings, setSettings] = useState<SettingsState>(() => {
-        try {
-            const saved = localStorage.getItem("webcatcher_settings");
-            if (saved) return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-        } catch {
-            // ignore
-        }
-        return DEFAULT_SETTINGS;
-    });
+    const [pausedMapTime, setPausedMapTime] = useState(0);
+    const [settings, setSettings] = useState<SettingsState>(() => loadSettings());
 
     const handleSettingChange = useCallback(<K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
         setSettings((prev) => {
             const updated = { ...prev, [key]: value };
-            try {
-                localStorage.setItem("webcatcher_settings", JSON.stringify(updated));
-            } catch {
-                // ignore
-            }
+            saveSettings(updated);
             return updated;
         });
     }, []);
@@ -86,14 +84,15 @@ function GameplaySession({
     const handleSettingReset = useCallback(<K extends keyof SettingsState>(key: K) => {
         setSettings((prev) => {
             const updated = { ...prev, [key]: DEFAULT_SETTINGS[key] };
-            try {
-                localStorage.setItem("webcatcher_settings", JSON.stringify(updated));
-            } catch {
-                // ignore
-            }
+            saveSettings(updated);
             return updated;
         });
     }, []);
+
+    const settingsRef = useRef(settings);
+    useEffect(() => {
+        settingsRef.current = settings;
+    }, [settings]);
 
     useEffect(() => {
         mountedRef.current = true;
@@ -130,9 +129,6 @@ function GameplaySession({
                     return;
                 }
 
-                audioRef.current = loadedAudio;
-                setAudioDurationMs(loadedAudio.durationMs);
-
                 const bgFilename = getBeatmapBackgroundPath(difficulty.parsed);
                 if (bgFilename) {
                     try {
@@ -143,12 +139,22 @@ function GameplaySession({
                         );
                         if (!abortController.signal.aborted) {
                             createdBgUrl = URL.createObjectURL(bgFile);
-                            setBackgroundUrl(createdBgUrl);
                         }
                     } catch (bgError) {
                         console.warn("Failed to load beatmap background:", bgError);
                     }
                 }
+
+                if (abortController.signal.aborted) {
+                    loadedAudio.destroy();
+                    if (createdBgUrl) URL.revokeObjectURL(createdBgUrl);
+                    return;
+                }
+
+                audioRef.current = loadedAudio;
+                if (createdBgUrl) setBackgroundUrl(createdBgUrl);
+                setAudioContext(loadedAudio.context);
+                setAudioDurationMs(loadedAudio.durationMs);
             } catch (error) {
                 if (
                     abortController.signal.aborted
@@ -167,6 +173,7 @@ function GameplaySession({
             abortController.abort();
             loadedAudio?.destroy();
             if (audioRef.current === loadedAudio) audioRef.current = undefined;
+            setAudioContext(undefined);
             if (createdBgUrl) {
                 URL.revokeObjectURL(createdBgUrl);
             }
@@ -174,7 +181,11 @@ function GameplaySession({
     }, [difficulty.parsed, difficulty.path, setId]);
 
     const getMapTime = useCallback(
-        () => audioRef.current?.getTime() ?? Number.NEGATIVE_INFINITY,
+        () => {
+            const time = audioRef.current?.getTime();
+            if (time === undefined || !Number.isFinite(time)) return Number.NEGATIVE_INFINITY;
+            return time + (settingsRef.current.audioOffset || 0);
+        },
         [],
     );
     const handleError = useCallback((error: unknown) => {
@@ -188,30 +199,89 @@ function GameplaySession({
     const handleGameReady = useCallback(() => {
         setPhase((current) => current === "loading" ? "ready" : current);
     }, []);
-    const handleFailed = useCallback(() => {
-        audioRef.current?.destroy();
-        setPhase("failed");
+    const handleStatsChange = useCallback((newStats: GameplayStats) => {
+        statsRef.current = newStats;
     }, []);
+    const handleFailed = useCallback(() => {
+        setPausedMapTime(Math.max(0, getMapTime()));
+        audioRef.current?.destroy();
+        setFinalStats(statsRef.current);
+        setPhase("failed");
+    }, [getMapTime]);
     const handleCleared = useCallback(() => {
         audioRef.current?.destroy();
+        setFinalStats(statsRef.current);
         setPhase("cleared");
     }, []);
+
+    const handlePause = useCallback(async () => {
+        if (phase !== "playing") return;
+        setPausedMapTime(Math.max(0, getMapTime()));
+        setFinalStats(statsRef.current);
+        setPhase("paused");
+        await audioRef.current?.pause();
+    }, [phase, getMapTime]);
+
+    const handleResume = useCallback(async () => {
+        if (phase !== "paused") return;
+        await audioRef.current?.resume();
+        if (mountedRef.current) setPhase("playing");
+    }, [phase]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === "Escape") {
+                e.preventDefault();
+                if (phase === "playing") {
+                    void handlePause();
+                } else if (phase === "paused") {
+                    void handleResume();
+                }
+            } else if (phase === "paused") {
+                if (e.code === "KeyR") {
+                    e.preventDefault();
+                    onRetry();
+                }
+            }
+        };
+
+        const handleBlur = () => {
+            if (phase === "playing") {
+                void handlePause();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("blur", handleBlur);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("blur", handleBlur);
+        };
+    }, [phase, handlePause, handleResume, onRetry]);
+
+    useEffect(() => {
+        const musicVol = ((settings.masterVolume ?? 100) / 100) * ((settings.musicVolume ?? 80) / 100) * 0.75;
+        audioRef.current?.setVolume(musicVol);
+    }, [settings.masterVolume, settings.musicVolume]);
 
     async function handleStart(): Promise<void> {
         const audio = audioRef.current;
         if (phase !== "ready" || !audio) return;
 
         setPhase("starting");
+        incrementPlayCount(setId, difficulty.id);
 
         try {
-            await audio.start(preparedBeatmap.preRollMs);
+            const musicVol = ((settings.masterVolume ?? 100) / 100) * ((settings.musicVolume ?? 80) / 100) * 0.75;
+            await audio.start(preparedBeatmap.preRollMs, musicVol);
             if (mountedRef.current) setPhase("playing");
         } catch (error) {
             if (mountedRef.current) handleError(error);
         }
     }
 
-    const isPlaying = phase === "playing";
+    const isGameActive = phase === "playing" || phase === "paused";
+    const isPaused = phase === "paused";
 
     return (
         <main className="game-page">
@@ -220,15 +290,31 @@ function GameplaySession({
                     beatmap={difficulty.parsed}
                     preparedBeatmap={preparedBeatmap}
                     audioDurationMs={audioDurationMs}
+                    audioContext={audioContext}
                     backgroundUrl={backgroundUrl}
                     backgroundDim={settings.backgroundDim}
-                    isPlaying={isPlaying}
+                    fpsLimit={settings.fpsLimit}
+                    settings={settings}
+                    isPlaying={isGameActive}
+                    isPaused={isPaused}
                     getMapTime={getMapTime}
-                    onStatsChange={setStats}
+                    onStatsChange={handleStatsChange}
                     onReady={handleGameReady}
                     onError={handleError}
                     onFailed={handleFailed}
                     onCleared={handleCleared}
+                />
+            )}
+
+            {phase === "paused" && (
+                <PauseOverlay
+                    stats={finalStats}
+                    currentTimeMs={pausedMapTime}
+                    totalDurationMs={audioDurationMs ?? preparedBeatmap.lastObjectTime ?? 1}
+                    retryCount={retryCount}
+                    onResume={() => void handleResume()}
+                    onRetry={onRetry}
+                    onExit={onExit}
                 />
             )}
 
@@ -245,30 +331,39 @@ function GameplaySession({
                 />
             )}
 
-            {(phase === "failed" || phase === "cleared" || phase === "error") && (
+            {phase === "cleared" && (
+                <RankingScreen
+                    setId={setId}
+                    stats={finalStats}
+                    difficulty={difficulty}
+                    backgroundUrl={backgroundUrl}
+                    maxComboPossible={preparedBeatmap.maxCombo}
+                    settings={settings}
+                    onRetry={onRetry}
+                    onExit={onExit}
+                />
+            )}
+
+            {phase === "failed" && (
+                <FailOverlay
+                    stats={finalStats}
+                    currentTimeMs={pausedMapTime}
+                    totalDurationMs={audioDurationMs ?? preparedBeatmap.lastObjectTime ?? 1}
+                    retryCount={retryCount}
+                    onRetry={onRetry}
+                    onExit={onExit}
+                />
+            )}
+
+            {phase === "error" && (
                 <div className="game-overlay" role="status">
                     <div className="game-dialog">
-                        {phase === "failed" && (
-                            <>
-                                <h1>Failed</h1>
-                                <button onClick={onRetry}>Retry</button>
-                            </>
-                        )}
-                        {phase === "cleared" && (
-                            <>
-                                <h1>Map cleared</h1>
-                                <p>Score: {stats.score.toLocaleString()}</p>
-                                <button onClick={onRetry}>Replay</button>
-                            </>
-                        )}
-                        {phase === "error" && (
-                            <>
-                                <h1>Could not start gameplay</h1>
-                                <p>{errorMessage}</p>
-                                <button onClick={onRetry}>Retry</button>
-                            </>
-                        )}
-                        <button className="game-back" onClick={onExit}>Back</button>
+                        <h1>Could not start gameplay</h1>
+                        <p style={{ color: "#eb5757" }}>{errorMessage}</p>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap" }}>
+                            <button onClick={onRetry}>↺ Retry</button>
+                            <button className="game-back" onClick={onExit}>✕ Back to Menu</button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -301,6 +396,7 @@ export default function Gameplay({ onExit }: GameplayProps) {
             key={`${selectedDifficulty.id}:${attempt}`}
             setId={selectedSet.id}
             difficulty={selectedDifficulty}
+            retryCount={attempt}
             onExit={onExit}
             onRetry={handleRetry}
         />

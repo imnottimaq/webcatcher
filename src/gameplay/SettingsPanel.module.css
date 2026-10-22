@@ -12,6 +12,14 @@
     user-select: none;
 }
 
+.standalonePanel {
+    position: static;
+    top: auto;
+    right: auto;
+    width: 100%;
+    z-index: auto;
+}
+
 .section {
     display: flex;
     flex-direction: column;
@@ -87,7 +95,6 @@
     margin-left: 20px;
 }
 
-/* Custom Slider matching osu!lazer */
 .sliderWrapper {
     width: 100%;
     padding-left: 20px;
@@ -139,7 +146,6 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
-/* Custom Toggle Switch matching osu!lazer hollow yellow pill */
 .toggleSwitch {
     width: 44px;
     height: 18px;
@@ -180,3 +186,99 @@
     opacity: 1;
     transform: translateX(22px);
 }
+
+.buttonGroup {
+    display: flex;
+    gap: 4px;
+    padding-left: 20px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.optionButton {
+    flex: 1;
+    background: #1b1b22;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #a0a0b2;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.optionButton:hover {
+    background: #252530;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.optionButtonActive {
+    background: #ff66aa;
+    color: #ffffff;
+    border-color: #ff66aa;
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(255, 102, 170, 0.4);
+}
+
+.keybindRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 20px;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 26px;
+}
+
+.keybindLabel {
+    font-size: 13px;
+    color: #e2e2ec;
+    font-weight: 400;
+}
+
+.keybindButtons {
+    display: flex;
+    gap: 6px;
+}
+
+.keybindButton {
+    min-width: 52px;
+    background: #1b1b22;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.keybindButton:hover {
+    background: #282836;
+    border-color: #ff66aa;
+}
+
+.keybindButtonActive {
+    background: #ff66aa;
+    color: #ffffff;
+    border-color: #ff88cc;
+    animation: keybindPulse 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes keybindPulse {
+    from {
+        box-shadow: 0 0 4px #ff66aa;
+        transform: scale(0.98);
+    }
+    to {
+        box-shadow: 0 0 12px #ff88cc;
+        transform: scale(1.02);
+    }
+}
+
+

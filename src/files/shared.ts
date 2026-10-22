@@ -87,9 +87,9 @@ export async function EnumFiles() {
         const indent = ' '.repeat(depth * 2);
         for await (const entry of handle.values()){
             if (entry.kind === 'directory') {
-                console.log(`${indent}📁 ${entry.name}/`)
+                console.log(`${indent}[dir] ${entry.name}/`)
                 await iterate(entry, depth+1)
-            } else console.log(`${indent}📄 ${entry.name}`)
+            } else console.log(`${indent}[file] ${entry.name}`)
         }
     }
 

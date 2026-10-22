@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import type { BeatmapDifficulty } from "../files/beatmap/beatmapImporter";
 import SettingsPanel from "./SettingsPanel";
 import type { SettingsState } from "./settingsTypes";
@@ -35,23 +35,72 @@ export default function PlayerLoader({
     onStart,
     onBack,
 }: PlayerLoaderProps) {
-    // Space / Enter to start when ready, Escape to exit
+    const isReadyRef = useRef(isReady);
+    const onStartRef = useRef(onStart);
+
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === "Escape") {
-                e.preventDefault();
-                onBack();
-            } else if (e.code === "Space" || e.code === "Enter") {
-                if (isReady) {
-                    e.preventDefault();
-                    onStart();
-                }
+        isReadyRef.current = isReady;
+        onStartRef.current = onStart;
+    });
+
+    const isHoveredRef = useRef(false);
+    const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const startedRef = useRef(false);
+
+    const tryStart = useCallback(() => {
+        if (startedRef.current) return;
+        if (!isReady) return;
+        if (isHoveredRef.current) return;
+        if (leaveTimerRef.current !== null) return;
+
+        startedRef.current = true;
+        onStart();
+    }, [isReady, onStart]);
+
+    useEffect(() => {
+        tryStart();
+    }, [tryStart]);
+
+    const handleSettingsMouseEnter = useCallback(() => {
+        isHoveredRef.current = true;
+        if (leaveTimerRef.current !== null) {
+            clearTimeout(leaveTimerRef.current);
+            leaveTimerRef.current = null;
+        }
+    }, []);
+
+    const handleSettingsMouseLeave = useCallback(() => {
+        isHoveredRef.current = false;
+        if (leaveTimerRef.current !== null) {
+            clearTimeout(leaveTimerRef.current);
+        }
+        leaveTimerRef.current = setTimeout(() => {
+            leaveTimerRef.current = null;
+            if (!startedRef.current && isReadyRef.current && !isHoveredRef.current) {
+                startedRef.current = true;
+                onStartRef.current();
+            }
+        }, 750);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (leaveTimerRef.current !== null) {
+                clearTimeout(leaveTimerRef.current);
+                leaveTimerRef.current = null;
             }
         };
+    }, []);
 
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [isReady, onStart, onBack]);
+    const handleManualStart = useCallback(() => {
+        if (!isReady || startedRef.current) return;
+        if (leaveTimerRef.current !== null) {
+            clearTimeout(leaveTimerRef.current);
+            leaveTimerRef.current = null;
+        }
+        startedRef.current = true;
+        onStart();
+    }, [isReady, onStart]);
 
     const starRating = difficulty.starRating ?? 4.30;
     const starColor = getStarRatingColor(starRating);
@@ -63,44 +112,25 @@ export default function PlayerLoader({
 
     return (
         <div className={styles.playerLoader} role="dialog" aria-modal="true" aria-label="Beatmap loading screen">
-            {/* Dynamic Background with user-adjusted Dim and Blur */}
             {backgroundUrl && (
                 <div
                     className={styles.loaderBackground}
                     style={{
                         backgroundImage: `url(${backgroundUrl})`,
-                        filter: `brightness(${Math.max(0.04, 1 - settings.backgroundDim / 100)}) blur(${settings.backgroundBlur}px)`,
+                        filter: `brightness(${Math.max(0.04, 1 - settings.backgroundDim / 100)}) blur(${(settings.backgroundBlur / 100) * 24}px)`,
                     }}
                 />
             )}
             <div className={styles.vignetteOverlay} />
 
-            {/* Center Column: osu! logo, Song details, Preview card, Difficulty, Metadata */}
             <main className={styles.centerColumn}>
-                {/* Iconic circular osu! logo */}
-                <div
-                    className={styles.osuLogo}
-                    onClick={isReady ? onStart : undefined}
-                    role="button"
-                    tabIndex={0}
-                    title={isReady ? "Click to start playing" : "Loading beatmap…"}
-                >
-                    <span className={styles.osuLogoText}>osu!</span>
-                </div>
-
-                {/* Song Title */}
                 <h1 className={styles.songTitle}>{title}</h1>
-
-                {/* Song Artist */}
                 <h2 className={styles.songArtist}>{artist}</h2>
-
-                {/* Beatmap Preview Banner Card */}
                 <div
                     className={`${styles.previewCard} ${isReady ? styles.previewCardReady : ""}`}
-                    onClick={isReady ? onStart : undefined}
+                    onClick={isReady ? handleManualStart : undefined}
                     role="button"
                     tabIndex={0}
-                    title={isReady ? "Click to start playing (or press Space / Enter)" : "Loading beatmap…"}
                 >
                     {backgroundUrl && (
                         <img
@@ -109,24 +139,10 @@ export default function PlayerLoader({
                             className={styles.previewImage}
                         />
                     )}
-                    <div className={styles.previewOverlay}>
-                        {!isReady ? (
-                            <div className={styles.loadingSpinner} />
-                        ) : (
-                            <div className={styles.readyIndicator}>
-                                <span className={styles.playArrow}>▶</span>
-                                <span className={styles.clickToPlayText}>Click to Start</span>
-                            </div>
-                        )}
-                    </div>
                 </div>
-
-                {/* Difficulty Name */}
                 <div className={styles.difficultyRow}>
                     <h3 className={styles.difficultyName}>{difficulty.versionName}</h3>
                 </div>
-
-                {/* Star Rating Badge Pill */}
                 <div
                     className={styles.starRatingPill}
                     style={{ backgroundColor: starColor }}
@@ -134,8 +150,6 @@ export default function PlayerLoader({
                     <span className={styles.starIcon}>★</span>
                     <span>{starRating.toFixed(2)}</span>
                 </div>
-
-                {/* Metadata Grid (Source & Mapper) */}
                 <div className={styles.metadataGrid}>
                     <span className={styles.metaLabel}>Source</span>
                     <span className={styles.metaValue}>{source}</span>
@@ -143,17 +157,15 @@ export default function PlayerLoader({
                     <span className={styles.metaValue}>{creator}</span>
                 </div>
             </main>
-
-            {/* Right Settings Panel (VISUAL, AUDIO, INPUT) */}
             <SettingsPanel
                 settings={settings}
                 onChange={onSettingsChange}
                 onReset={onSettingsReset}
+                onMouseEnter={handleSettingsMouseEnter}
+                onMouseLeave={handleSettingsMouseLeave}
             />
 
-            {/* Bottom Bar: Back button on the left, FPS/ms monitor on the right */}
             <footer className={styles.bottomBar}>
-                {/* Slanted Hot-Pink Back Button */}
                 <button
                     type="button"
                     className={styles.backButton}
@@ -165,7 +177,6 @@ export default function PlayerLoader({
                         <span>Back</span>
                     </span>
                 </button>
-
             </footer>
         </div>
     );

@@ -139,8 +139,7 @@ async function readBeatmapSet(directory: FileSystemDirectoryHandle): Promise<Bea
     };
 }
 
-export async function importBeatmapArchive(): Promise<BeatmapSet> {
-    const file = await selectArchiveFile([".osz"], "osu! beatmap");
+export async function importBeatmapFile(file: File): Promise<BeatmapSet> {
     const directoryName = file.name.replace(/\.osz$/i, "");
     const root = await navigator.storage.getDirectory();
     const beatmapsDirectory = await root.getDirectoryHandle("beatmaps", { create: true });
@@ -169,6 +168,11 @@ export async function importBeatmapArchive(): Promise<BeatmapSet> {
 
         throw error;
     }
+}
+
+export async function importBeatmapArchive(): Promise<BeatmapSet> {
+    const file = await selectArchiveFile([".osz"], "osu! beatmap");
+    return importBeatmapFile(file);
 }
 
 export async function getImportedBeatmapSet(name: string): Promise<BeatmapSet | undefined> {

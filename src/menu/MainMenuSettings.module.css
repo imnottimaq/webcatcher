@@ -1,0 +1,599 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: flex-start;
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.drawer {
+    width: 540px;
+    max-width: 95vw;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(22, 22, 32, 0.98) 0%, rgba(14, 14, 22, 0.98) 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 12px 0 45px rgba(0, 0, 0, 0.75);
+    display: flex;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    user-select: none;
+    animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.navRail {
+    width: 60px;
+    min-width: 60px;
+    height: 100%;
+    background: rgba(10, 10, 16, 0.7);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.navRailBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: #8c8c9e;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+.navRailBtn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.navRailBtnActive {
+    background: rgba(255, 102, 170, 0.18);
+    color: #ff66aa;
+}
+
+.navRailBtnActive::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    border-radius: 2px;
+    background: #ff66aa;
+    box-shadow: 0 0 8px #ff66aa;
+}
+
+.contentArea {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    padding: 20px 24px 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: rgba(25, 25, 38, 0.4);
+}
+
+.headerTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+}
+
+.headerSubtitle {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #9292a8;
+}
+
+.closeButton {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #cfcfe2;
+    font-size: 16px;
+    transition: all 0.15s ease;
+}
+
+.closeButton:hover {
+    background: rgba(255, 75, 120, 0.3);
+    border-color: #ff66aa;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.searchWrapper {
+    padding: 14px 24px 10px 24px;
+    background: rgba(18, 18, 28, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px 36px 10px 38px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+}
+
+.searchInput:focus {
+    border-color: #ffd633;
+    box-shadow: 0 0 10px rgba(255, 214, 51, 0.25);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 36px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7b7b90;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.searchClear {
+    position: absolute;
+    right: 36px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #8c8c9e;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.searchClear:hover {
+    color: #ffffff;
+}
+
+.scrollContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.scrollContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollContainer::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+}
+
+.scrollContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.sectionCard {
+    background: rgba(25, 25, 36, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 4px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sectionTitle {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #ff66aa;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.controlGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.labelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.labelLeft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resetBtn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #928fed;
+    font-size: 13px;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+}
+
+.resetBtn:hover {
+    color: #c0beff;
+    opacity: 1;
+    transform: rotate(-30deg);
+}
+
+.resetBtnModified {
+    opacity: 0.9;
+    color: #ffd633;
+}
+
+.resetBtnModified:hover {
+    color: #ffffff;
+}
+
+.controlLabel {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e4e4ee;
+}
+
+.valueBadge {
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #ffd633;
+    background: rgba(255, 214, 51, 0.12);
+    border: 1px solid rgba(255, 214, 51, 0.25);
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(
+        to right,
+        #ffd633 0%,
+        #ffd633 var(--progress, 50%),
+        #1c1c28 var(--progress, 50%),
+        #1c1c28 100%
+    );
+    outline: none;
+    margin: 4px 0 2px 0;
+    cursor: pointer;
+    transition: background 0.05s ease;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 32px;
+    height: 14px;
+    border-radius: 3px;
+    background: #ffd633;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+    transition: transform 0.1s, filter 0.1s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    filter: brightness(1.15);
+    transform: scaleY(1.15);
+}
+
+.slider::-moz-range-thumb {
+    width: 32px;
+    height: 14px;
+    border-radius: 3px;
+    background: #ffd633;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+}
+
+.toggleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 28px;
+}
+
+.toggleSwitch {
+    width: 48px;
+    height: 20px;
+    border-radius: 10px;
+    border: 2px solid #ffd633;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggleSwitch:focus-visible {
+    outline: 2px solid #ffd633;
+    outline-offset: 2px;
+}
+
+.toggleThumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background: #ffd633;
+    position: absolute;
+    left: 4px;
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+}
+
+.toggleActive {
+    background: rgba(255, 214, 51, 0.25);
+    box-shadow: 0 0 10px rgba(255, 214, 51, 0.35);
+}
+
+.toggleActive .toggleThumb {
+    opacity: 1;
+    transform: translateX(24px);
+}
+
+.keybindRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+}
+
+.keybindLabel {
+    font-size: 13px;
+    color: #e2e2ec;
+    font-weight: 500;
+}
+
+.keybindActions {
+    display: flex;
+    gap: 8px;
+}
+
+.keybindKey {
+    min-width: 64px;
+    height: 28px;
+    background: #181822;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.keybindKey:hover {
+    background: #252536;
+    border-color: #ffd633;
+    color: #ffd633;
+}
+
+.keybindKeyRebinding {
+    background: #ff66aa;
+    border-color: #ff88cc;
+    color: #ffffff;
+    animation: keybindPulse 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes keybindPulse {
+    from {
+        box-shadow: 0 0 6px #ff66aa;
+        transform: scale(0.97);
+    }
+    to {
+        box-shadow: 0 0 14px #ff88cc;
+        transform: scale(1.03);
+    }
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.optionBtn {
+    flex: 1;
+    height: 30px;
+    background: #1b1b26;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #9c9cb4;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.optionBtn:hover {
+    background: #28283a;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.optionBtnActive {
+    background: #ff66aa;
+    color: #ffffff;
+    border-color: #ff66aa;
+    box-shadow: 0 0 10px rgba(255, 102, 170, 0.45);
+}
+
+.skinSelect {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+}
+
+.skinSelect:focus {
+    border-color: #ffd633;
+}
+
+.skinImportBtn {
+    padding: 8px 14px;
+    background: rgba(255, 214, 51, 0.15);
+    border: 1px solid #ffd633;
+    border-radius: 6px;
+    color: #ffd633;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.skinImportBtn:hover {
+    background: #ffd633;
+    color: #121216;
+}
+
+.footer {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.resetAllBtn {
+    background: rgba(255, 75, 75, 0.12);
+    border: 1px solid rgba(255, 75, 75, 0.35);
+    border-radius: 6px;
+    color: #ff6b6b;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.resetAllBtn:hover {
+    background: rgba(255, 75, 75, 0.3);
+    color: #ffffff;
+}
+
+.clearDataBtn, .dangerBtn {
+    background: rgba(255, 50, 50, 0.2);
+    border: 1px solid rgba(255, 75, 75, 0.5);
+    border-radius: 6px;
+    color: #ff8080;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.clearDataBtn:hover, .dangerBtn:hover {
+    background: rgba(255, 50, 50, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 75, 75, 0.4);
+}

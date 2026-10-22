@@ -1,32 +1,39 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import styles from "./FpsCounter.module.css";
+import { fpsTracker } from "../utils/fpsTracker";
 
 type FpsDisplayMode = "full" | "fpsOnly" | "hidden";
 
 const STORAGE_KEY = "webcatcher_fps_mode";
 
 function getMsColor(ms: number): string {
-    if (ms <= 10) return "#7cdb4d"; // > 100 fps (green)
-    if (ms <= 17) return "#ffd633"; // ~60-100 fps (yellow)
-    if (ms <= 35) return "#e07a5f"; // ~30-60 fps (salmon/orange, matches osu!lazer)
-    return "#eb5757";               // < 30 fps (red)
+    if (ms <= 4.5) return "#b37eff";
+    if (ms <= 8.5) return "#52e5ff";
+    if (ms <= 17) return "#7cdb4d";
+    if (ms <= 34) return "#ffd633";
+    return "#eb5757";
 }
 
 export default function FpsCounter() {
     const [mode, setMode] = useState<FpsDisplayMode>(() => {
         try {
+            const settingsRaw = localStorage.getItem("webcatcher_settings");
+            if (settingsRaw) {
+                const parsed = JSON.parse(settingsRaw);
+                if (parsed.showFpsCounter === false) return "hidden";
+            }
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved === "full" || saved === "fpsOnly" || saved === "hidden") {
+            if (saved === "full" || saved === "fpsOnly") {
                 return saved;
             }
         } catch {
-            // ignore storage access error
+            void 0;
         }
         return "full";
     });
 
-    const [displayFps, setDisplayFps] = useState<number>(60);
-    const [displayMs, setDisplayMs] = useState<number>(16);
+    const msRef = useRef<HTMLSpanElement>(null);
+    const fpsRef = useRef<HTMLSpanElement>(null);
 
     const cycleMode = useCallback(() => {
         setMode((prev) => {
@@ -35,16 +42,15 @@ export default function FpsCounter() {
             try {
                 localStorage.setItem(STORAGE_KEY, next);
             } catch {
-                // ignore
+                void 0;
             }
             return next;
         });
     }, []);
 
-    // Listen for Ctrl+F11 or Shift+F11 to toggle mode
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.shiftKey) && e.code === "F11") {
+            if ((e.ctrlKey || e.shiftKey) && (e.code === "F11" || e.key === "F11")) {
                 e.preventDefault();
                 cycleMode();
             }
@@ -54,56 +60,24 @@ export default function FpsCounter() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [cycleMode]);
 
-    // High-performance RAF measurement loop
-    const stateRef = useRef({
-        lastTime: 0,
-        frames: 0,
-        totalDelta: 0,
-        lastUpdate: 0,
-    });
-
     useEffect(() => {
         if (mode === "hidden") return;
 
-        let animId: number;
-        stateRef.current.lastTime = performance.now();
-        stateRef.current.lastUpdate = performance.now();
-        stateRef.current.frames = 0;
-        stateRef.current.totalDelta = 0;
-
-        const tick = (now: number) => {
-            const delta = now - stateRef.current.lastTime;
-            stateRef.current.lastTime = now;
-
-            // Ignore extreme tab-switch / background pauses (> 1s)
-            if (delta > 0 && delta < 1000) {
-                stateRef.current.frames += 1;
-                stateRef.current.totalDelta += delta;
+        const unsubscribe = fpsTracker.subscribe((calculatedFps, avgDelta) => {
+            if (fpsRef.current) {
+                fpsRef.current.textContent = `${calculatedFps} fps`;
             }
-
-            const elapsedSinceUpdate = now - stateRef.current.lastUpdate;
-            if (elapsedSinceUpdate >= 200 && stateRef.current.frames > 0) {
-                const avgDelta = stateRef.current.totalDelta / stateRef.current.frames;
-                const calculatedFps = Math.round((stateRef.current.frames * 1000) / elapsedSinceUpdate);
-
-                setDisplayFps(calculatedFps);
-                setDisplayMs(avgDelta);
-
-                stateRef.current.frames = 0;
-                stateRef.current.totalDelta = 0;
-                stateRef.current.lastUpdate = now;
+            if (msRef.current) {
+                const formattedMs = avgDelta < 10 ? avgDelta.toFixed(1) : Math.round(avgDelta).toString();
+                msRef.current.textContent = `${formattedMs} ms`;
+                msRef.current.style.color = getMsColor(avgDelta);
             }
+        });
 
-            animId = requestAnimationFrame(tick);
-        };
-
-        animId = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(animId);
+        return unsubscribe;
     }, [mode]);
 
     if (mode === "hidden") return null;
-
-    const formattedMs = displayMs < 10 ? displayMs.toFixed(1) : Math.round(displayMs).toString();
 
     return (
         <div
@@ -115,13 +89,14 @@ export default function FpsCounter() {
         >
             {mode === "full" && (
                 <span
+                    ref={msRef}
                     className={styles.msValue}
-                    style={{ color: getMsColor(displayMs) }}
+                    style={{ color: "#52e5ff" }}
                 >
-                    {formattedMs} ms
+                    -- ms
                 </span>
             )}
-            <span className={styles.fpsValue}>{displayFps} fps</span>
+            <span ref={fpsRef} className={styles.fpsValue}>-- fps</span>
         </div>
     );
 }

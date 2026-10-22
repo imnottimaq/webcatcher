@@ -1,0 +1,265 @@
+{
+  "meta": {
+    "width": 2048,
+    "height": 2048,
+    "image": "default-atlas.png"
+  },
+  "frames": {
+    "catcherIdle": {
+      "x": 2,
+      "y": 2,
+      "width": 612,
+      "height": 640,
+      "logicalWidth": 306,
+      "logicalHeight": 320
+    },
+    "catcherKiai": {
+      "x": 616,
+      "y": 2,
+      "width": 612,
+      "height": 640,
+      "logicalWidth": 306,
+      "logicalHeight": 320
+    },
+    "catcherFail": {
+      "x": 1230,
+      "y": 2,
+      "width": 612,
+      "height": 640,
+      "logicalWidth": 306,
+      "logicalHeight": 320
+    },
+    "lighting": {
+      "x": 2,
+      "y": 644,
+      "width": 368,
+      "height": 368,
+      "logicalWidth": 184,
+      "logicalHeight": 184
+    },
+    "apple": {
+      "x": 372,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "appleOverlay": {
+      "x": 630,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "bananas": {
+      "x": 888,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "bananasOverlay": {
+      "x": 1146,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "grapes": {
+      "x": 1404,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "grapesOverlay": {
+      "x": 1662,
+      "y": 644,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "orange": {
+      "x": 2,
+      "y": 1014,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "orangeOverlay": {
+      "x": 260,
+      "y": 1014,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "pear": {
+      "x": 518,
+      "y": 1014,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "pearOverlay": {
+      "x": 776,
+      "y": 1014,
+      "width": 256,
+      "height": 256,
+      "logicalWidth": 128,
+      "logicalHeight": 128
+    },
+    "droplet": {
+      "x": 1034,
+      "y": 1014,
+      "width": 164,
+      "height": 206,
+      "logicalWidth": 82,
+      "logicalHeight": 103
+    },
+    "score_dot": {
+      "x": 1200,
+      "y": 1014,
+      "width": 30,
+      "height": 108,
+      "logicalWidth": 15,
+      "logicalHeight": 54
+    },
+    "score_comma": {
+      "x": 1232,
+      "y": 1014,
+      "width": 30,
+      "height": 108,
+      "logicalWidth": 15,
+      "logicalHeight": 54
+    },
+    "score_x": {
+      "x": 1264,
+      "y": 1014,
+      "width": 70,
+      "height": 98,
+      "logicalWidth": 35,
+      "logicalHeight": 49
+    },
+    "score_0": {
+      "x": 1336,
+      "y": 1014,
+      "width": 66,
+      "height": 92,
+      "logicalWidth": 33,
+      "logicalHeight": 46
+    },
+    "score_1": {
+      "x": 1404,
+      "y": 1014,
+      "width": 34,
+      "height": 92,
+      "logicalWidth": 17,
+      "logicalHeight": 46
+    },
+    "score_3": {
+      "x": 1440,
+      "y": 1014,
+      "width": 62,
+      "height": 92,
+      "logicalWidth": 31,
+      "logicalHeight": 46
+    },
+    "score_4": {
+      "x": 1504,
+      "y": 1014,
+      "width": 64,
+      "height": 92,
+      "logicalWidth": 32,
+      "logicalHeight": 46
+    },
+    "score_6": {
+      "x": 1570,
+      "y": 1014,
+      "width": 68,
+      "height": 92,
+      "logicalWidth": 34,
+      "logicalHeight": 46
+    },
+    "score_7": {
+      "x": 1640,
+      "y": 1014,
+      "width": 62,
+      "height": 92,
+      "logicalWidth": 31,
+      "logicalHeight": 46
+    },
+    "score_8": {
+      "x": 1704,
+      "y": 1014,
+      "width": 68,
+      "height": 92,
+      "logicalWidth": 34,
+      "logicalHeight": 46
+    },
+    "score_percent": {
+      "x": 1774,
+      "y": 1014,
+      "width": 108,
+      "height": 92,
+      "logicalWidth": 54,
+      "logicalHeight": 46
+    },
+    "score_2": {
+      "x": 1884,
+      "y": 1014,
+      "width": 62,
+      "height": 90,
+      "logicalWidth": 31,
+      "logicalHeight": 45
+    },
+    "score_5": {
+      "x": 1948,
+      "y": 1014,
+      "width": 62,
+      "height": 90,
+      "logicalWidth": 31,
+      "logicalHeight": 45
+    },
+    "score_9": {
+      "x": 2,
+      "y": 1272,
+      "width": 68,
+      "height": 90,
+      "logicalWidth": 34,
+      "logicalHeight": 45
+    },
+    "scorebarBg": {
+      "x": 72,
+      "y": 1272,
+      "width": 1390,
+      "height": 88,
+      "logicalWidth": 695,
+      "logicalHeight": 44
+    },
+    "scorebarMarker": {
+      "x": 1464,
+      "y": 1272,
+      "width": 48,
+      "height": 48,
+      "logicalWidth": 24,
+      "logicalHeight": 24
+    },
+    "scorebarColour": {
+      "x": 2,
+      "y": 1364,
+      "width": 1290,
+      "height": 20,
+      "logicalWidth": 645,
+      "logicalHeight": 10
+    }
+  }
+}

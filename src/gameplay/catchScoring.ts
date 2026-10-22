@@ -4,6 +4,7 @@ import type { CatchObjectKind } from "./catchObjects";
 export interface CatchScoreState {
     readonly score: number;
     readonly combo: number;
+    readonly maxCombo: number;
     readonly health: number;
     readonly fruitsHit: number;
     readonly dropletsHit: number;
@@ -15,6 +16,7 @@ export interface CatchScoreState {
 export const INITIAL_CATCH_SCORE: CatchScoreState = Object.freeze({
     score: 0,
     combo: 0,
+    maxCombo: 0,
     health: 1,
     fruitsHit: 0,
     dropletsHit: 0,
@@ -73,19 +75,23 @@ export function applyCatchJudgement(
     }
 
     if (kind === "droplet") {
+        const nextCombo = state.combo + 1;
         return Object.freeze({
             ...state,
             score: state.score + 100,
-            combo: state.combo + 1,
+            combo: nextCombo,
+            maxCombo: Math.max(state.maxCombo, nextCombo),
             health: clampHealth(state.health + 0.015),
             dropletsHit: state.dropletsHit + 1,
         });
     }
 
+    const nextCombo = state.combo + 1;
     return Object.freeze({
         ...state,
         score: state.score + 300,
-        combo: state.combo + 1,
+        combo: nextCombo,
+        maxCombo: Math.max(state.maxCombo, nextCombo),
         health: clampHealth(state.health + 0.015),
         fruitsHit: state.fruitsHit + 1,
     });
@@ -99,5 +105,12 @@ export function toGameplayStats(state: CatchScoreState): GameplayStats {
         score: state.score,
         accuracy: accuracyObjects === 0 ? 1 : hits / accuracyObjects,
         health: state.health,
+        combo: state.combo,
+        maxCombo: state.maxCombo,
+        fruitsHit: state.fruitsHit,
+        dropletsHit: state.dropletsHit,
+        tinyHit: state.tinyHit,
+        misses: state.misses,
+        tinyMisses: state.tinyMisses,
     });
 }

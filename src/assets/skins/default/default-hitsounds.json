@@ -1,0 +1,390 @@
+{
+  "sampleRate": 44100,
+  "duration": 39.8717,
+  "sounds": {
+    "applause": {
+      "offset": 0,
+      "duration": 8.8555
+    },
+    "applause.mp3": {
+      "offset": 0,
+      "duration": 8.8555
+    },
+    "combobreak": {
+      "offset": 8.9055,
+      "duration": 1.0449
+    },
+    "combobreak.mp3": {
+      "offset": 8.9055,
+      "duration": 1.0449
+    },
+    "count": {
+      "offset": 10.0004,
+      "duration": 0.1452
+    },
+    "count.wav": {
+      "offset": 10.0004,
+      "duration": 0.1452
+    },
+    "drum-hitclap": {
+      "offset": 10.1956,
+      "duration": 0.6547
+    },
+    "drum-hitclap.wav": {
+      "offset": 10.1956,
+      "duration": 0.6547
+    },
+    "drum-hitfinish": {
+      "offset": 10.9003,
+      "duration": 0.6522
+    },
+    "drum-hitfinish.wav": {
+      "offset": 10.9003,
+      "duration": 0.6522
+    },
+    "drum-hitnormal": {
+      "offset": 11.6025,
+      "duration": 0.8246
+    },
+    "drum-hitnormal.wav": {
+      "offset": 11.6025,
+      "duration": 0.8246
+    },
+    "drum-hitwhistle": {
+      "offset": 12.4772,
+      "duration": 0.3994
+    },
+    "drum-hitwhistle.wav": {
+      "offset": 12.4772,
+      "duration": 0.3994
+    },
+    "drum-sliderslide": {
+      "offset": 12.9265,
+      "duration": 0.588
+    },
+    "drum-sliderslide.wav": {
+      "offset": 12.9265,
+      "duration": 0.588
+    },
+    "drum-slidertick": {
+      "offset": 13.5645,
+      "duration": 0.3873
+    },
+    "drum-slidertick.wav": {
+      "offset": 13.5645,
+      "duration": 0.3873
+    },
+    "drum-sliderwhistle": {
+      "offset": 14.0018,
+      "duration": 0.381
+    },
+    "drum-sliderwhistle.wav": {
+      "offset": 14.0018,
+      "duration": 0.381
+    },
+    "failsound": {
+      "offset": 14.4328,
+      "duration": 2.8996
+    },
+    "failsound.mp3": {
+      "offset": 14.4328,
+      "duration": 2.8996
+    },
+    "nightcore-clap": {
+      "offset": 17.3824,
+      "duration": 1.7188
+    },
+    "nightcore-clap.wav": {
+      "offset": 17.3824,
+      "duration": 1.7188
+    },
+    "nightcore-finish": {
+      "offset": 19.1512,
+      "duration": 1.7188
+    },
+    "nightcore-finish.wav": {
+      "offset": 19.1512,
+      "duration": 1.7188
+    },
+    "nightcore-hat": {
+      "offset": 20.9199,
+      "duration": 1.7188
+    },
+    "nightcore-hat.wav": {
+      "offset": 20.9199,
+      "duration": 1.7188
+    },
+    "nightcore-kick": {
+      "offset": 22.6887,
+      "duration": 1.7188
+    },
+    "nightcore-kick.wav": {
+      "offset": 22.6887,
+      "duration": 1.7188
+    },
+    "normal-hitclap": {
+      "offset": 24.4574,
+      "duration": 0.1039
+    },
+    "normal-hitclap.wav": {
+      "offset": 24.4574,
+      "duration": 0.1039
+    },
+    "normal-hitfinish": {
+      "offset": 24.6113,
+      "duration": 1.7023
+    },
+    "normal-hitfinish.wav": {
+      "offset": 24.6113,
+      "duration": 1.7023
+    },
+    "normal-hitnormal": {
+      "offset": 26.3636,
+      "duration": 1.1414
+    },
+    "normal-hitnormal.wav": {
+      "offset": 26.3636,
+      "duration": 1.1414
+    },
+    "normal-hitwhistle": {
+      "offset": 27.555,
+      "duration": 1.2127
+    },
+    "normal-hitwhistle.wav": {
+      "offset": 27.555,
+      "duration": 1.2127
+    },
+    "normal-sliderslide": {
+      "offset": 28.8177,
+      "duration": 1.2681
+    },
+    "normal-sliderslide.wav": {
+      "offset": 28.8177,
+      "duration": 1.2681
+    },
+    "normal-slidertick": {
+      "offset": 30.1358,
+      "duration": 0.4908
+    },
+    "normal-slidertick.wav": {
+      "offset": 30.1358,
+      "duration": 0.4908
+    },
+    "normal-sliderwhistle": {
+      "offset": 30.6767,
+      "duration": 0.381
+    },
+    "normal-sliderwhistle.wav": {
+      "offset": 30.6767,
+      "duration": 0.381
+    },
+    "sectionfail": {
+      "offset": 31.1077,
+      "duration": 1.28
+    },
+    "sectionfail.mp3": {
+      "offset": 31.1077,
+      "duration": 1.28
+    },
+    "sectionpass": {
+      "offset": 32.4377,
+      "duration": 1.3584
+    },
+    "sectionpass.mp3": {
+      "offset": 32.4377,
+      "duration": 1.3584
+    },
+    "soft-hitclap": {
+      "offset": 33.8461,
+      "duration": 0.2203
+    },
+    "soft-hitclap.wav": {
+      "offset": 33.8461,
+      "duration": 0.2203
+    },
+    "soft-hitfinish": {
+      "offset": 34.1164,
+      "duration": 2.2809
+    },
+    "soft-hitfinish.wav": {
+      "offset": 34.1164,
+      "duration": 2.2809
+    },
+    "soft-hitnormal": {
+      "offset": 36.4473,
+      "duration": 0.8246
+    },
+    "soft-hitnormal.wav": {
+      "offset": 36.4473,
+      "duration": 0.8246
+    },
+    "soft-hitwhistle": {
+      "offset": 37.3219,
+      "duration": 0.8249
+    },
+    "soft-hitwhistle.wav": {
+      "offset": 37.3219,
+      "duration": 0.8249
+    },
+    "soft-sliderslide": {
+      "offset": 38.1967,
+      "duration": 0.588
+    },
+    "soft-sliderslide.wav": {
+      "offset": 38.1967,
+      "duration": 0.588
+    },
+    "soft-slidertick": {
+      "offset": 38.8347,
+      "duration": 0.6676
+    },
+    "soft-slidertick.wav": {
+      "offset": 38.8347,
+      "duration": 0.6676
+    },
+    "soft-sliderwhistle": {
+      "offset": 39.5523,
+      "duration": 0.2695
+    },
+    "soft-sliderwhistle.wav": {
+      "offset": 39.5523,
+      "duration": 0.2695
+    },
+    "comboBreak": {
+      "offset": 8.9055,
+      "duration": 1.0449
+    },
+    "failSound": {
+      "offset": 14.4328,
+      "duration": 2.8996
+    },
+    "sectionPass": {
+      "offset": 32.4377,
+      "duration": 1.3584
+    },
+    "sectionFail": {
+      "offset": 31.1077,
+      "duration": 1.28
+    },
+    "drumHitNormal": {
+      "offset": 11.6025,
+      "duration": 0.8246
+    },
+    "drumhitnormal": {
+      "offset": 11.6025,
+      "duration": 0.8246
+    },
+    "drumHitClap": {
+      "offset": 10.1956,
+      "duration": 0.6547
+    },
+    "drumhitclap": {
+      "offset": 10.1956,
+      "duration": 0.6547
+    },
+    "drumHitFinish": {
+      "offset": 10.9003,
+      "duration": 0.6522
+    },
+    "drumhitfinish": {
+      "offset": 10.9003,
+      "duration": 0.6522
+    },
+    "drumHitWhistle": {
+      "offset": 12.4772,
+      "duration": 0.3994
+    },
+    "drumhitwhistle": {
+      "offset": 12.4772,
+      "duration": 0.3994
+    },
+    "drumSliderTick": {
+      "offset": 13.5645,
+      "duration": 0.3873
+    },
+    "drumslidertick": {
+      "offset": 13.5645,
+      "duration": 0.3873
+    },
+    "normalHitNormal": {
+      "offset": 26.3636,
+      "duration": 1.1414
+    },
+    "normalhitnormal": {
+      "offset": 26.3636,
+      "duration": 1.1414
+    },
+    "normalHitClap": {
+      "offset": 24.4574,
+      "duration": 0.1039
+    },
+    "normalhitclap": {
+      "offset": 24.4574,
+      "duration": 0.1039
+    },
+    "normalHitFinish": {
+      "offset": 24.6113,
+      "duration": 1.7023
+    },
+    "normalhitfinish": {
+      "offset": 24.6113,
+      "duration": 1.7023
+    },
+    "normalHitWhistle": {
+      "offset": 27.555,
+      "duration": 1.2127
+    },
+    "normalhitwhistle": {
+      "offset": 27.555,
+      "duration": 1.2127
+    },
+    "normalSliderTick": {
+      "offset": 30.1358,
+      "duration": 0.4908
+    },
+    "normalslidertick": {
+      "offset": 30.1358,
+      "duration": 0.4908
+    },
+    "softHitNormal": {
+      "offset": 36.4473,
+      "duration": 0.8246
+    },
+    "softhitnormal": {
+      "offset": 36.4473,
+      "duration": 0.8246
+    },
+    "softHitClap": {
+      "offset": 33.8461,
+      "duration": 0.2203
+    },
+    "softhitclap": {
+      "offset": 33.8461,
+      "duration": 0.2203
+    },
+    "softHitFinish": {
+      "offset": 34.1164,
+      "duration": 2.2809
+    },
+    "softhitfinish": {
+      "offset": 34.1164,
+      "duration": 2.2809
+    },
+    "softHitWhistle": {
+      "offset": 37.3219,
+      "duration": 0.8249
+    },
+    "softhitwhistle": {
+      "offset": 37.3219,
+      "duration": 0.8249
+    },
+    "softSliderTick": {
+      "offset": 38.8347,
+      "duration": 0.6676
+    },
+    "softslidertick": {
+      "offset": 38.8347,
+      "duration": 0.6676
+    }
+  }
+}

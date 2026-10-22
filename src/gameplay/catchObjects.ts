@@ -27,20 +27,54 @@ export interface PlayableCatchObject {
     readonly speed: number;
     readonly scale: number;
     readonly radius: number;
+    readonly soundKeys: readonly string[];
+    readonly isHyperDash?: boolean;
+    readonly hyperDashTargetX?: number;
+    readonly hyperDashTargetTime?: number;
+    readonly comboIndex: number;
+    readonly color: number;
 }
 
 export interface PreparedCatchBeatmap {
     readonly objects: readonly PlayableCatchObject[];
     readonly preRollMs: number;
     readonly lastObjectTime: number;
+    readonly maxCombo: number;
 }
 
-function flattenObjects(beatmap: CatchBeatmap): CatchHitObject[] {
-    return beatmap.hitObjects.flatMap((object) =>
-        object instanceof JuiceStream || object instanceof BananaShower
-            ? object.nestedHitObjects as CatchHitObject[]
-            : [object]
-    ).sort((left, right) => left.startTime - right.startTime);
+export const DEFAULT_COMBO_COLORS = [
+    0x00d2ff,
+    0x00ff85,
+    0xff6b6b,
+    0xffe600,
+    0xaa66ff,
+    0xff9800,
+];
+
+interface FlatCatchHitObject {
+    object: CatchHitObject;
+    comboIndex: number;
+}
+
+function flattenObjects(beatmap: CatchBeatmap): FlatCatchHitObject[] {
+    const list: FlatCatchHitObject[] = [];
+
+    for (const topObject of beatmap.hitObjects) {
+        const topComboIndex = (topObject as { comboIndexWithOffsets?: number }).comboIndexWithOffsets
+            ?? (topObject as { comboIndex?: number }).comboIndex
+            ?? 1;
+
+        if (topObject instanceof JuiceStream || topObject instanceof BananaShower) {
+            const nestedList = topObject.nestedHitObjects as CatchHitObject[];
+            for (const nested of nestedList) {
+                list.push({ object: nested, comboIndex: topComboIndex });
+            }
+        } else {
+            list.push({ object: topObject, comboIndex: topComboIndex });
+        }
+    }
+
+    return list.sort((left, right) => left.object.startTime - right.object.startTime);
 }
 
 function getObjectKind(object: CatchHitObject): CatchObjectKind | undefined {
@@ -51,10 +85,38 @@ function getObjectKind(object: CatchHitObject): CatchObjectKind | undefined {
     return undefined;
 }
 
+function resolveSoundKeys(object: CatchHitObject, defaultBank: string): string[] {
+    const keys = new Set<string>();
+    const samples = (object as { samples?: Array<{ sampleSet?: string; hitSound?: string }> }).samples;
+
+    if (samples && samples.length > 0) {
+        for (const s of samples) {
+            const bank = (s.sampleSet && s.sampleSet !== "None" ? s.sampleSet : defaultBank).toLowerCase();
+            const snd = (s.hitSound || "normal").toLowerCase();
+            keys.add(`${bank}-hit${snd}`);
+        }
+    }
+
+    if (keys.size === 0) {
+        const hitSound = (object as { hitSound?: number }).hitSound ?? 1;
+        keys.add(`${defaultBank}-hitnormal`);
+        if ((hitSound & 2) !== 0) keys.add(`${defaultBank}-hitwhistle`);
+        if ((hitSound & 4) !== 0) keys.add(`${defaultBank}-hitfinish`);
+        if ((hitSound & 8) !== 0) keys.add(`${defaultBank}-hitclap`);
+    }
+
+    return Array.from(keys);
+}
+
 export function prepareCatchBeatmap(beatmap: CatchBeatmap): PreparedCatchBeatmap {
     const objects: PlayableCatchObject[] = [];
 
-    for (const object of flattenObjects(beatmap)) {
+    const rawColors = beatmap.colors?.comboColors;
+    const comboColors: number[] = (rawColors && rawColors.length > 0)
+        ? rawColors.map((c) => ((c.red & 0xff) << 16) | ((c.green & 0xff) << 8) | (c.blue & 0xff))
+        : DEFAULT_COMBO_COLORS;
+
+    for (const { object, comboIndex } of flattenObjects(beatmap)) {
         const kind = getObjectKind(object);
         const x = object.effectiveX;
         const startTime = object.startTime;
@@ -74,6 +136,25 @@ export function prepareCatchBeatmap(beatmap: CatchBeatmap): PreparedCatchBeatmap
         const speed = STABLE_FALL_DISTANCE / timePreempt;
         const spawnPreempt = SPAWN_FALL_DISTANCE / speed;
 
+        const samplePoint = beatmap.controlPoints?.samplePointAt(startTime);
+        const defaultBank = (samplePoint?.sampleSet && samplePoint.sampleSet !== "None"
+            ? samplePoint.sampleSet
+            : "Soft"
+        ).toLowerCase();
+        const soundKeys = resolveSoundKeys(object, defaultBank);
+
+        const rawTarget = (object as { hyperDashTarget?: CatchHitObject | null }).hyperDashTarget;
+        const isHyperDash = Boolean(rawTarget && Number.isFinite(rawTarget.effectiveX));
+        const hyperDashTargetX = isHyperDash && rawTarget ? rawTarget.effectiveX : undefined;
+        const hyperDashTargetTime = isHyperDash && rawTarget ? rawTarget.startTime : undefined;
+
+        let color = comboColors[(Math.max(1, comboIndex) - 1) % comboColors.length];
+        if (kind === "banana") {
+            color = 0xffe438;
+        } else if (kind === "droplet") {
+            color = 0x4fc3f7;
+        }
+
         objects.push(Object.freeze({
             id: objects.length,
             kind,
@@ -84,6 +165,12 @@ export function prepareCatchBeatmap(beatmap: CatchBeatmap): PreparedCatchBeatmap
             speed,
             scale,
             radius: 64 * scale,
+            soundKeys: Object.freeze(soundKeys),
+            isHyperDash,
+            hyperDashTargetX,
+            hyperDashTargetTime,
+            comboIndex,
+            color,
         }));
     }
 
@@ -99,9 +186,12 @@ export function prepareCatchBeatmap(beatmap: CatchBeatmap): PreparedCatchBeatmap
         ? Math.max(0, rawAudioLeadIn)
         : 0;
 
+    const maxCombo = objects.filter((o) => o.kind === "fruit" || o.kind === "droplet").length;
+
     return Object.freeze({
         objects: Object.freeze(objects),
         preRollMs: Math.max(audioLeadIn, -earliestSpawnTime),
         lastObjectTime: objects.at(-1)?.startTime ?? 0,
+        maxCombo,
     });
 }

@@ -30,7 +30,6 @@
     pointer-events: none;
 }
 
-/* Center Content Column */
 .centerColumn {
     position: relative;
     z-index: 5;
@@ -43,7 +42,6 @@
     transform: translateY(-24px);
 }
 
-/* Iconic osu! circular logo */
 .osuLogo {
     width: 68px;
     height: 68px;
@@ -73,7 +71,6 @@
     transform: translateY(-1px);
 }
 
-/* Song Title & Artist */
 .songTitle {
     margin: 0;
     font-size: 32px;
@@ -92,7 +89,6 @@
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
-/* Beatmap Preview Banner */
 .previewCard {
     margin-top: 24px;
     width: 380px;
@@ -191,7 +187,6 @@
     }
 }
 
-/* Difficulty Section */
 .difficultyRow {
     margin-top: 20px;
     display: flex;
@@ -207,7 +202,6 @@
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
-/* Star Rating Pill */
 .starRatingPill {
     margin-top: 8px;
     display: inline-flex;
@@ -227,7 +221,6 @@
     transform: translateY(-0.5px);
 }
 
-/* Metadata Grid */
 .metadataGrid {
     margin-top: 36px;
     display: grid;
@@ -250,7 +243,6 @@
     font-weight: 500;
 }
 
-/* Bottom Bar */
 .bottomBar {
     position: absolute;
     bottom: 0;
@@ -267,7 +259,6 @@
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Slanted osu! Back Button */
 .backButton {
     transform: skewX(-14deg);
     background: #eb1a72;

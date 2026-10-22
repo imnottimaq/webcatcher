@@ -1,25 +1,76 @@
-import type React from "react";
-import { DEFAULT_SETTINGS, type SettingsState } from "./settingsTypes";
+import React, { useState, useEffect } from "react";
+import { DEFAULT_SETTINGS, formatKeyName, type SettingsState } from "./settingsTypes";
 import styles from "./SettingsPanel.module.css";
 
 interface SettingsPanelProps {
     settings: SettingsState;
     onChange<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void;
     onReset<K extends keyof SettingsState>(key: K): void;
+    className?: string;
+    style?: React.CSSProperties;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     settings,
     onChange,
     onReset,
+    className,
+    style,
+    onMouseEnter,
+    onMouseLeave,
 }) => {
+    const [rebindingKey, setRebindingKey] = useState<keyof SettingsState | null>(null);
+
+    useEffect(() => {
+        if (!rebindingKey) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.code === "Escape") {
+                setRebindingKey(null);
+                return;
+            }
+
+            onChange(rebindingKey, e.code as SettingsState[typeof rebindingKey]);
+            setRebindingKey(null);
+        };
+
+        window.addEventListener("keydown", handleKeyDown, { capture: true });
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown, { capture: true });
+        };
+    }, [rebindingKey, onChange]);
+
+    const hasCustomKeys = settings.leftKey1 !== DEFAULT_SETTINGS.leftKey1
+        || settings.leftKey2 !== DEFAULT_SETTINGS.leftKey2
+        || settings.rightKey1 !== DEFAULT_SETTINGS.rightKey1
+        || settings.rightKey2 !== DEFAULT_SETTINGS.rightKey2
+        || settings.dashKey1 !== DEFAULT_SETTINGS.dashKey1
+        || settings.dashKey2 !== DEFAULT_SETTINGS.dashKey2;
+
+    const handleResetKeys = () => {
+        onReset("leftKey1");
+        onReset("leftKey2");
+        onReset("rightKey1");
+        onReset("rightKey2");
+        onReset("dashKey1");
+        onReset("dashKey2");
+    };
     return (
-        <aside className={styles.settingsPanel} aria-label="Game Settings">
-            {/* VISUAL SETTINGS */}
+        <aside
+            className={`${styles.settingsPanel} ${className ?? ""}`.trim()}
+            style={style}
+            aria-label="Game Settings"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
             <div className={styles.section}>
                 <h3 className={styles.sectionHeader}>VISUAL SETTINGS</h3>
 
-                {/* Background dim */}
                 <div className={styles.controlGroup}>
                     <div className={styles.labelRow}>
                         <button
@@ -47,7 +98,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
                 </div>
 
-                {/* Background blur */}
                 <div className={styles.controlGroup}>
                     <div className={styles.labelRow}>
                         <button
@@ -64,18 +114,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         <input
                             type="range"
                             min="0"
-                            max="30"
+                            max="100"
                             value={settings.backgroundBlur}
                             className={styles.slider}
                             style={{
-                                "--slider-progress": `${(settings.backgroundBlur / 30) * 100}%`,
+                                "--slider-progress": `${settings.backgroundBlur}%`,
                             } as React.CSSProperties}
                             onChange={(e) => onChange("backgroundBlur", Number(e.target.value))}
                         />
                     </div>
                 </div>
 
-                {/* Storyboard / video */}
                 <div className={styles.controlRow}>
                     <div className={styles.labelRow}>
                         <button
@@ -98,7 +147,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </button>
                 </div>
 
-                {/* Beatmap skins */}
                 <div className={styles.controlRow}>
                     <div className={styles.labelRow}>
                         <button
@@ -121,7 +169,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </button>
                 </div>
 
-                {/* Beatmap colours */}
                 <div className={styles.controlRow}>
                     <div className={styles.labelRow}>
                         <button
@@ -144,7 +191,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </button>
                 </div>
 
-                {/* Combo colour normalisation */}
                 <div className={styles.controlGroup}>
                     <div className={styles.labelRow}>
                         <span className={styles.labelIndent}>Combo colour normalisation</span>
@@ -163,13 +209,136 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         />
                     </div>
                 </div>
+
+                <div className={styles.controlRow}>
+                    <div className={styles.labelRow}>
+                        <button
+                            type="button"
+                            className={`${styles.resetButton} ${settings.hitLighting !== DEFAULT_SETTINGS.hitLighting ? styles.resetVisible : ""}`}
+                            title="Reset to default"
+                            onClick={() => onReset("hitLighting")}
+                        >
+                            ↺
+                        </button>
+                        <span className={styles.label}>Hit lighting</span>
+                    </div>
+                    <button
+                        type="button"
+                        className={`${styles.toggleSwitch} ${settings.hitLighting ? styles.toggleActive : ""}`}
+                        onClick={() => onChange("hitLighting", !settings.hitLighting)}
+                        aria-pressed={settings.hitLighting}
+                    >
+                        <span className={styles.toggleThumb} />
+                    </button>
+                </div>
+
+                <div className={styles.controlRow}>
+                    <div className={styles.labelRow}>
+                        <button
+                            type="button"
+                            className={`${styles.resetButton} ${settings.showFpsCounter !== DEFAULT_SETTINGS.showFpsCounter ? styles.resetVisible : ""}`}
+                            title="Reset to default"
+                            onClick={() => onReset("showFpsCounter")}
+                        >
+                            ↺
+                        </button>
+                        <span className={styles.label}>Show FPS counter (Ctrl+F11)</span>
+                    </div>
+                    <button
+                        type="button"
+                        className={`${styles.toggleSwitch} ${settings.showFpsCounter ? styles.toggleActive : ""}`}
+                        onClick={() => onChange("showFpsCounter", !settings.showFpsCounter)}
+                        aria-pressed={settings.showFpsCounter}
+                    >
+                        <span className={styles.toggleThumb} />
+                    </button>
+                </div>
             </div>
 
-            {/* AUDIO SETTINGS */}
             <div className={styles.section}>
                 <h3 className={styles.sectionHeader}>AUDIO SETTINGS</h3>
 
-                {/* Beatmap hitsounds */}
+                <div className={styles.controlGroup}>
+                    <div className={styles.labelRow}>
+                        <button
+                            type="button"
+                            className={`${styles.resetButton} ${settings.masterVolume !== DEFAULT_SETTINGS.masterVolume ? styles.resetVisible : ""}`}
+                            title="Reset to default"
+                            onClick={() => onReset("masterVolume")}
+                        >
+                            ↺
+                        </button>
+                        <span className={styles.label}>Master volume</span>
+                    </div>
+                    <div className={styles.sliderWrapper}>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={settings.masterVolume}
+                            className={styles.slider}
+                            style={{
+                                "--slider-progress": `${settings.masterVolume}%`,
+                            } as React.CSSProperties}
+                            onChange={(e) => onChange("masterVolume", Number(e.target.value))}
+                        />
+                    </div>
+                </div>
+
+                <div className={styles.controlGroup}>
+                    <div className={styles.labelRow}>
+                        <button
+                            type="button"
+                            className={`${styles.resetButton} ${settings.musicVolume !== DEFAULT_SETTINGS.musicVolume ? styles.resetVisible : ""}`}
+                            title="Reset to default"
+                            onClick={() => onReset("musicVolume")}
+                        >
+                            ↺
+                        </button>
+                        <span className={styles.label}>Music volume</span>
+                    </div>
+                    <div className={styles.sliderWrapper}>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={settings.musicVolume}
+                            className={styles.slider}
+                            style={{
+                                "--slider-progress": `${settings.musicVolume}%`,
+                            } as React.CSSProperties}
+                            onChange={(e) => onChange("musicVolume", Number(e.target.value))}
+                        />
+                    </div>
+                </div>
+
+                <div className={styles.controlGroup}>
+                    <div className={styles.labelRow}>
+                        <button
+                            type="button"
+                            className={`${styles.resetButton} ${settings.hitsoundVolume !== DEFAULT_SETTINGS.hitsoundVolume ? styles.resetVisible : ""}`}
+                            title="Reset to default"
+                            onClick={() => onReset("hitsoundVolume")}
+                        >
+                            ↺
+                        </button>
+                        <span className={styles.label}>Hitsound volume</span>
+                    </div>
+                    <div className={styles.sliderWrapper}>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={settings.hitsoundVolume}
+                            className={styles.slider}
+                            style={{
+                                "--slider-progress": `${settings.hitsoundVolume}%`,
+                            } as React.CSSProperties}
+                            onChange={(e) => onChange("hitsoundVolume", Number(e.target.value))}
+                        />
+                    </div>
+                </div>
+
                 <div className={styles.controlRow}>
                     <div className={styles.labelRow}>
                         <button
@@ -192,7 +361,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </button>
                 </div>
 
-                {/* Audio offset */}
                 <div className={styles.controlGroup}>
                     <div className={styles.labelRow}>
                         <span className={styles.labelIndent}>Audio offset (this beatmap)</span>
@@ -213,11 +381,88 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 </div>
             </div>
 
-            {/* INPUT SETTINGS */}
             <div className={styles.section}>
-                <h3 className={styles.sectionHeader}>INPUT SETTINGS</h3>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 className={styles.sectionHeader}>INPUT SETTINGS</h3>
+                    {hasCustomKeys && (
+                        <button
+                            type="button"
+                            className={styles.resetButton}
+                            title="Reset all keybinds to defaults"
+                            onClick={handleResetKeys}
+                            style={{ fontSize: "11px", width: "auto", opacity: 0.9 }}
+                        >
+                            Reset keys ↺
+                        </button>
+                    )}
+                </div>
 
-                {/* Disable clicks during gameplay */}
+                <div className={styles.keybindRow}>
+                    <span className={styles.keybindLabel}>Move Left</span>
+                    <div className={styles.keybindButtons}>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "leftKey1" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "leftKey1" ? null : "leftKey1")}
+                            title="Click to rebind key 1"
+                        >
+                            {rebindingKey === "leftKey1" ? "..." : formatKeyName(settings.leftKey1)}
+                        </button>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "leftKey2" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "leftKey2" ? null : "leftKey2")}
+                            title="Click to rebind key 2"
+                        >
+                            {rebindingKey === "leftKey2" ? "..." : formatKeyName(settings.leftKey2)}
+                        </button>
+                    </div>
+                </div>
+
+                <div className={styles.keybindRow}>
+                    <span className={styles.keybindLabel}>Move Right</span>
+                    <div className={styles.keybindButtons}>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "rightKey1" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "rightKey1" ? null : "rightKey1")}
+                            title="Click to rebind key 1"
+                        >
+                            {rebindingKey === "rightKey1" ? "..." : formatKeyName(settings.rightKey1)}
+                        </button>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "rightKey2" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "rightKey2" ? null : "rightKey2")}
+                            title="Click to rebind key 2"
+                        >
+                            {rebindingKey === "rightKey2" ? "..." : formatKeyName(settings.rightKey2)}
+                        </button>
+                    </div>
+                </div>
+
+                <div className={styles.keybindRow}>
+                    <span className={styles.keybindLabel}>Dash (Speed)</span>
+                    <div className={styles.keybindButtons}>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "dashKey1" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "dashKey1" ? null : "dashKey1")}
+                            title="Click to rebind key 1"
+                        >
+                            {rebindingKey === "dashKey1" ? "..." : formatKeyName(settings.dashKey1)}
+                        </button>
+                        <button
+                            type="button"
+                            className={`${styles.keybindButton} ${rebindingKey === "dashKey2" ? styles.keybindButtonActive : ""}`}
+                            onClick={() => setRebindingKey(rebindingKey === "dashKey2" ? null : "dashKey2")}
+                            title="Click to rebind key 2"
+                        >
+                            {rebindingKey === "dashKey2" ? "..." : formatKeyName(settings.dashKey2)}
+                        </button>
+                    </div>
+                </div>
+
                 <div className={styles.controlRow}>
                     <div className={styles.labelRow}>
                         <span className={styles.labelIndent}>Disable clicks during gameplay</span>
@@ -232,6 +477,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </button>
                 </div>
             </div>
+
         </aside>
     );
 };

@@ -1,4 +1,4 @@
-import { Container, Sprite, type Texture } from "pixi.js";
+import { Container, Graphics, Sprite, type Texture } from "pixi.js";
 import type { GameplayStats } from "./gameplayStats";
 
 const FILL_X = 12.5;
@@ -7,7 +7,7 @@ const SCORE_DIGITS = 6;
 
 export interface GameHUDCanvas {
     container: Container;
-    update(stats: GameplayStats, deltaMs: number): void;
+    update(stats: GameplayStats, deltaMs: number, progress?: number): void;
     layout(screenWidth: number, screenHeight: number, stageScale: number): void;
     destroy(): void;
 }
@@ -47,6 +47,9 @@ export function createGameHUDCanvas(textures: Record<string, Texture>): GameHUDC
     const accuracyContainer = new Container();
     root.addChild(accuracyContainer);
 
+    const progressGfx = new Graphics();
+    root.addChild(progressGfx);
+
     const accSprites: Sprite[] = [];
 
     let currentScreenWidth = 0;
@@ -63,86 +66,8 @@ export function createGameHUDCanvas(textures: Record<string, Texture>): GameHUDC
     const accDigitWidth = scoreDigitWidth;
     const scoreHeight = textures.score_0.height;
 
-    function renderScore(scoreValue: number): void {
-        const intScore = Math.max(0, Math.trunc(scoreValue));
-        const scoreStr = intScore.toString().padStart(SCORE_DIGITS, "0");
-
-        while (scoreSprites.length < scoreStr.length) {
-            const spr = new Sprite();
-            scoreSprites.push(spr);
-            scoreContainer.addChild(spr);
-        }
-        while (scoreSprites.length > scoreStr.length) {
-            const spr = scoreSprites.pop();
-            if (spr) {
-                spr.removeFromParent();
-                spr.destroy();
-            }
-        }
-
-        let currentX = 0;
-        for (let i = 0; i < scoreStr.length; i++) {
-            const char = scoreStr[i];
-            const spr = scoreSprites[i];
-            const tex = getScoreTexture(char) ?? textures.score_0;
-            spr.texture = tex;
-            spr.x = currentX + (scoreDigitWidth - tex.width) / 2;
-            spr.y = 0;
-            currentX += scoreDigitWidth;
-        }
-
-        cachedScoreWidth = currentX;
-    }
-
-    function renderAccuracy(accuracyValue: number): void {
-        const accClamped = Math.max(0, Math.min(1, accuracyValue));
-        const accStr = (accClamped * 100).toFixed(2) + "%";
-
-        while (accSprites.length < accStr.length) {
-            const spr = new Sprite();
-            accSprites.push(spr);
-            accuracyContainer.addChild(spr);
-        }
-        while (accSprites.length > accStr.length) {
-            const spr = accSprites.pop();
-            if (spr) {
-                spr.removeFromParent();
-                spr.destroy();
-            }
-        }
-
-        let currentX = 0;
-        for (let i = 0; i < accStr.length; i++) {
-            const char = accStr[i];
-            const spr = accSprites[i];
-
-            let tex: Texture;
-            let slotWidth: number;
-
-            if (char === ".") {
-                tex = textures.score_dot;
-                slotWidth = tex.width;
-                spr.y = 0;
-            } else if (char === "%") {
-                tex = textures.score_percent;
-                slotWidth = tex.width;
-                spr.y = 0;
-            } else {
-                tex = getScoreTexture(char) ?? textures.score_0;
-                slotWidth = accDigitWidth;
-                spr.y = 0;
-            }
-
-            spr.texture = tex;
-            spr.x = currentX + (slotWidth - tex.width) / 2;
-            currentX += slotWidth;
-        }
-
-        cachedAccWidth = currentX;
-    }
-
-    renderScore(0);
-    renderAccuracy(1.0);
+    let lastRenderedScore = -1;
+    let lastRenderedAccStr = "";
 
     function applyLayout(): void {
         if (currentScreenWidth <= 0 || currentScreenHeight <= 0) return;
@@ -169,12 +94,138 @@ export function createGameHUDCanvas(textures: Record<string, Texture>): GameHUDC
         const accMarginX = 16 * hudScale;
         accuracyContainer.x = currentScreenWidth - accMarginX - accRenderWidth;
         accuracyContainer.y = scoreContainer.y + (scoreHeight * scoreScale) + (6 * hudScale);
+
+        const progressRadius = 9 * hudScale;
+        progressGfx.scale.set(hudScale);
+        progressGfx.position.set(
+            accuracyContainer.x - progressRadius - (10 * hudScale),
+            accuracyContainer.y + (scoreHeight * accScale / 2),
+        );
     }
+
+    function renderScore(scoreValue: number): void {
+        const intScore = Math.max(0, Math.trunc(scoreValue));
+        if (intScore === lastRenderedScore) return;
+        lastRenderedScore = intScore;
+
+        const scoreStr = intScore.toString().padStart(SCORE_DIGITS, "0");
+
+        while (scoreSprites.length < scoreStr.length) {
+            const spr = new Sprite(textures.score_0);
+            scoreSprites.push(spr);
+            scoreContainer.addChild(spr);
+        }
+        while (scoreSprites.length > scoreStr.length) {
+            const spr = scoreSprites.pop();
+            if (spr) {
+                spr.removeFromParent();
+                spr.destroy();
+            }
+        }
+
+        let currentX = 0;
+        for (let i = 0; i < scoreStr.length; i++) {
+            const char = scoreStr[i];
+            const spr = scoreSprites[i];
+            const tex = getScoreTexture(char) ?? textures.score_0;
+            if (tex) spr.texture = tex;
+            spr.x = currentX + (scoreDigitWidth - (spr.texture?.width ?? 0)) / 2;
+            spr.y = 0;
+            currentX += scoreDigitWidth;
+        }
+
+        if (cachedScoreWidth !== currentX) {
+            cachedScoreWidth = currentX;
+            applyLayout();
+        }
+    }
+
+    function renderAccuracy(accuracyValue: number): void {
+        const accClamped = Math.max(0, Math.min(1, accuracyValue));
+        const accStr = (accClamped * 100).toFixed(2) + "%";
+        if (accStr === lastRenderedAccStr) return;
+        lastRenderedAccStr = accStr;
+
+        while (accSprites.length < accStr.length) {
+            const spr = new Sprite(textures.score_0);
+            accSprites.push(spr);
+            accuracyContainer.addChild(spr);
+        }
+        while (accSprites.length > accStr.length) {
+            const spr = accSprites.pop();
+            if (spr) {
+                spr.removeFromParent();
+                spr.destroy();
+            }
+        }
+
+        let currentX = 0;
+        for (let i = 0; i < accStr.length; i++) {
+            const char = accStr[i];
+            const spr = accSprites[i];
+
+            let tex: Texture;
+            let slotWidth: number;
+
+            if (char === ".") {
+                tex = textures.score_dot;
+                slotWidth = tex?.width ?? 10;
+                spr.y = 0;
+            } else if (char === "%") {
+                tex = textures.score_percent;
+                slotWidth = tex?.width ?? 10;
+                spr.y = 0;
+            } else {
+                tex = getScoreTexture(char) ?? textures.score_0;
+                slotWidth = accDigitWidth;
+                spr.y = 0;
+            }
+
+            if (tex) spr.texture = tex;
+            spr.x = currentX + (slotWidth - (spr.texture?.width ?? 0)) / 2;
+            currentX += slotWidth;
+        }
+
+        if (cachedAccWidth !== currentX) {
+            cachedAccWidth = currentX;
+            applyLayout();
+        }
+    }
+
+    let lastRenderedProgress = -1;
+    function renderProgress(progress: number): void {
+        const clamped = Math.max(0, Math.min(1, progress));
+        if (Math.abs(clamped - lastRenderedProgress) < 0.001) return;
+        lastRenderedProgress = clamped;
+
+        progressGfx.clear();
+        const r = 9;
+
+        progressGfx.circle(0, 0, r)
+            .fill({ color: 0x0a0a14, alpha: 0.65 })
+            .stroke({ color: 0xffffff, alpha: 0.22, width: 2 });
+
+        if (clamped > 0.001) {
+            const startAngle = -Math.PI / 2;
+            const endAngle = startAngle + clamped * Math.PI * 2;
+
+            progressGfx.moveTo(0, 0)
+                .arc(0, 0, r - 1.5, startAngle, endAngle, false)
+                .fill({ color: 0xffffff, alpha: 0.22 });
+
+            progressGfx.arc(0, 0, r, startAngle, endAngle, false)
+                .stroke({ color: 0xffffff, alpha: 0.95, width: 2, cap: "round" });
+        }
+    }
+
+    renderScore(0);
+    renderAccuracy(1.0);
+    renderProgress(0);
 
     return {
         container: root,
 
-        update(stats: GameplayStats, deltaMs: number): void {
+        update(stats: GameplayStats, deltaMs: number, progress = 0): void {
             targetHealth = Math.max(0, Math.min(1, stats.health));
             if (targetHealth > prevHealth) markerBulge = 1.35;
             prevHealth = targetHealth;
@@ -204,7 +255,7 @@ export function createGameHUDCanvas(textures: Record<string, Texture>): GameHUDC
             if (Math.abs(scoreDelta) < 1) displayedScore = targetScore;
             renderScore(displayedScore);
             renderAccuracy(stats.accuracy);
-            applyLayout();
+            renderProgress(progress);
         },
 
         layout(screenWidth: number, screenHeight: number, stageScale: number): void {
